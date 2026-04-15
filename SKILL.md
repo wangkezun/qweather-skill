@@ -52,6 +52,40 @@ variables:
 - 日出、日落、月相
 - 穿衣、紫外线、洗车、运动指数
 
+## 密钥生成
+
+如果尚未生成 Ed25519 密钥对，使用本项目的脚本：
+
+```bash
+node scripts/gen-keys.js
+```
+
+默认在当前目录生成 `ed25519-private.pem` 和 `ed25519-public.pem`，也可指定输出目录：
+
+```bash
+node scripts/gen-keys.js /path/to/output
+```
+
+生成后：
+1. 将 `ed25519-public.pem` 上传到和风天气控制台
+2. 记录生成的**凭据 ID**
+3. 妥善保管 `ed25519-private.pem`，切勿提交到版本控制
+
+## 参数获取
+
+按以下优先级获取配置参数：
+
+1. **本目录 `.env` 文件**（优先）：读取本 skill 目录下的 `.env` 文件
+2. **用户全局配置**：`~/.config/qweather/.env`
+3. **系统环境变量**：从当前 shell 环境获取
+
+读取 `.env` 文件：
+```bash
+source "$(dirname "$0")/.env" 2>/dev/null || source ~/.config/qweather/.env 2>/dev/null || true
+```
+
+`.env` 文件格式参考 `.env.example`。
+
 ## 认证 — JWT Token 生成
 
 所有 API 请求需要 `Authorization: Bearer <token>` 头。

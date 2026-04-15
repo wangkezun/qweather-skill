@@ -27,10 +27,14 @@
 2. 创建项目，记录 **项目 ID**
 3. 生成 Ed25519 密钥对：
    ```bash
+   node scripts/gen-keys.js
+   ```
+   或使用 openssl：
+   ```bash
    openssl genpkey -algorithm ED25519 -out ed25519-private.pem
    openssl pkey -pubout -in ed25519-private.pem > ed25519-public.pem
    ```
-4. 在控制台上传公钥，记录 **凭据 ID**
+4. 在控制台上传 `ed25519-public.pem`，记录 **凭据 ID**
 5. 在控制台设置中查看你的 **API 主机地址**（格式：`xxx.qweatherapi.com`）
 
 ### 2. 配置环境变量
