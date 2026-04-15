@@ -42,7 +42,7 @@
 | `QWEATHER_API_HOST` | API 主机地址（如 `abc123.qweatherapi.com`） |
 | `QWEATHER_PROJECT_ID` | 项目 ID |
 | `QWEATHER_CREDENTIAL_ID` | 凭据 ID（用于 JWT 的 `kid`） |
-| `QWEATHER_PRIVATE_KEY` | Ed25519 私钥（PEM 格式） |
+| `QWEATHER_PRIVATE_KEY` | Ed25519 私钥（PEM 文件路径或 PEM 内容） |
 
 ### 3. 安装 Skill
 

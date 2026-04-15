@@ -12,7 +12,7 @@ variables:
     description: 和风天气凭据 ID（JWT kid）
     required: true
   QWEATHER_PRIVATE_KEY:
-    description: Ed25519 私钥（PEM 格式）
+    description: Ed25519 私钥（PEM 文件路径或 PEM 内容）
     required: true
 ---
 
