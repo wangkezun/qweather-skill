@@ -75,16 +75,10 @@ node scripts/gen-keys.js /path/to/output
 | `QWEATHER_CREDENTIAL_ID` | 是 | 凭据 ID（用于 JWT 的 `kid`） |
 | `QWEATHER_PRIVATE_KEY` | 是 | Ed25519 私钥（PEM 文件路径或 PEM 内容） |
 
-按以下优先级获取：
+按以下优先级自动获取（脚本内置）：
 
-1. **本目录 `.env` 文件**（优先）：读取本 skill 目录下的 `.env` 文件
-2. **用户全局配置**：`~/.config/qweather/.env`
-3. **系统环境变量**：从当前 shell 环境获取
-
-读取 `.env` 文件：
-```bash
-source "$(dirname "$0")/.env" 2>/dev/null || source ~/.config/qweather/.env 2>/dev/null || true
-```
+1. **系统环境变量**（优先）：已设置的环境变量直接使用
+2. **本目录 `.env` 文件**：脚本自动读取 skill 目录下的 `.env` 文件作为 fallback
 
 `.env` 文件格式参考 `.env.example`。
 
@@ -95,7 +89,7 @@ source "$(dirname "$0")/.env" 2>/dev/null || source ~/.config/qweather/.env 2>/d
 使用本项目的脚本生成 token：
 
 ```bash
-TOKEN=$(node scripts/gen-jwt.js "$QWEATHER_PROJECT_ID" "$QWEATHER_CREDENTIAL_ID" "$QWEATHER_PRIVATE_KEY")
+TOKEN=$(node scripts/gen-jwt.js)
 ```
 
 Token 有效期 1 小时。同一会话内可复用，无需每次重新生成。

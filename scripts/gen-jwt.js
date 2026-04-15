@@ -1,19 +1,44 @@
 #!/usr/bin/env node
 
 // QWeather Ed25519 JWT Generator — zero external dependencies
-// Usage: node gen-jwt.js <project_id> <credential_id> <private_key_or_path>
-//   <private_key_or_path> can be:
-//     - A file path to a PEM file (e.g., /path/to/ed25519-private.pem)
-//     - PEM content directly (starting with "-----BEGIN")
+// Usage: node gen-jwt.js
+// Reads config from environment variables, falls back to .env file in script directory.
 // Output: JWT token string to stdout
 
 const crypto = require('crypto');
 const fs = require('fs');
+const path = require('path');
 
-const [,, projectId, credentialId, privateKeyOrPath] = process.argv;
+// Load .env file if environment variables are not set
+function loadEnvFile() {
+  const envPath = path.join(__dirname, '..', '.env');
+  if (!fs.existsSync(envPath)) return;
+  const content = fs.readFileSync(envPath, 'utf8');
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eqIndex = trimmed.indexOf('=');
+    if (eqIndex === -1) continue;
+    const key = trimmed.slice(0, eqIndex).trim();
+    const value = trimmed.slice(eqIndex + 1).trim();
+    if (!process.env[key]) {
+      process.env[key] = value;
+    }
+  }
+}
+
+loadEnvFile();
+
+const projectId = process.env.QWEATHER_PROJECT_ID;
+const credentialId = process.env.QWEATHER_CREDENTIAL_ID;
+const privateKeyOrPath = process.env.QWEATHER_PRIVATE_KEY;
 
 if (!projectId || !credentialId || !privateKeyOrPath) {
-  console.error('Usage: node gen-jwt.js <project_id> <credential_id> <private_key_or_path>');
+  console.error('Missing required environment variables:');
+  if (!projectId) console.error('  - QWEATHER_PROJECT_ID');
+  if (!credentialId) console.error('  - QWEATHER_CREDENTIAL_ID');
+  if (!privateKeyOrPath) console.error('  - QWEATHER_PRIVATE_KEY');
+  console.error('\nSet them in environment or create .env file (see .env.example)');
   process.exit(1);
 }
 
