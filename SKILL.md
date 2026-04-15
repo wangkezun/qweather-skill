@@ -1,19 +1,12 @@
 ---
 name: qweather
 description: 和风天气查询 — 查询实时天气、天气预报、空气质量、灾害预警、生活指数等。当用户询问天气、气温、降雨、空气质量、日出日落等信息时使用。
-variables:
-  QWEATHER_API_HOST:
-    description: 和风天气 API 主机地址（如 abc123.qweatherapi.com）
-    required: true
-  QWEATHER_PROJECT_ID:
-    description: 和风天气项目 ID
-    required: true
-  QWEATHER_CREDENTIAL_ID:
-    description: 和风天气凭据 ID（JWT kid）
-    required: true
-  QWEATHER_PRIVATE_KEY:
-    description: Ed25519 私钥（PEM 文件路径或 PEM 内容）
-    required: true
+license: MIT
+compatibility: Requires Node.js 12+ for JWT generation scripts
+metadata:
+  author: wangkezun
+  version: "1.0.0"
+  tags: weather, air-quality, forecast, qweather
 ---
 
 ## 输出模式
@@ -73,7 +66,16 @@ node scripts/gen-keys.js /path/to/output
 
 ## 参数获取
 
-按以下优先级获取配置参数：
+本 skill 需要以下环境变量：
+
+| 变量 | 必填 | 说明 |
+|------|------|------|
+| `QWEATHER_API_HOST` | 是 | API 主机地址（如 `abc123.qweatherapi.com`） |
+| `QWEATHER_PROJECT_ID` | 是 | 项目 ID |
+| `QWEATHER_CREDENTIAL_ID` | 是 | 凭据 ID（用于 JWT 的 `kid`） |
+| `QWEATHER_PRIVATE_KEY` | 是 | Ed25519 私钥（PEM 文件路径或 PEM 内容） |
+
+按以下优先级获取：
 
 1. **本目录 `.env` 文件**（优先）：读取本 skill 目录下的 `.env` 文件
 2. **用户全局配置**：`~/.config/qweather/.env`
