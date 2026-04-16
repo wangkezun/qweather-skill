@@ -124,7 +124,7 @@ node /path/to/skill_dir/scripts/api.js weather-hourly --location=101010100
 node /path/to/skill_dir/scripts/api.js air-quality --lat=39.90 --lon=116.41
 
 # 灾害预警 → alerts[]: headline, severity, description, effectiveTime, expireTime, instruction
-node /path/to/skill_dir/scripts/api.js weather-alert --lat=39.90 --lon=116.41
+node /path/to/skill_dir/scripts/api.js weather-alert --lat=39.90 --lon=116.41 [--localTime=true]
 
 # 生活指数（type: 0=全部, 3=穿衣, 5=紫外线, 9=感冒）→ daily[]: name, level, category, text
 node /path/to/skill_dir/scripts/api.js indices --location=101010100 --type=3,5,9
@@ -196,6 +196,52 @@ node /path/to/skill_dir/scripts/api.js moon --location=101010100 --date=20260415
 | 指数 | 等级 | 建议 |
 |------|------|------|
 | {name} | {category} | {text} |
+```
+
+### 逐时预报
+
+```
+🕐 {城市} 未来{N}小时逐时预报
+
+| 时间 | 天气 | 温度 | 降水概率 | 风向 | 风力 | 湿度 |
+|------|------|------|----------|------|------|------|
+| {fxTime} | {text} | {temp}°C | {pop}% | {windDir} | {windScale}级 | {humidity}% |
+```
+
+### 分钟级降水
+
+```
+🌧 {城市} 分钟级降水预报
+
+📝 {summary}
+
+| 时间 | 降水量 | 类型 |
+|------|--------|------|
+| {fxTime} | {precip}mm | {type} |
+```
+
+如无降水：`☀️ {城市} 未来两小时无降水。`
+
+### 日出日落
+
+```
+🌅 {城市} {date} 天文信息
+
+🌅 日出：{sunrise}
+🌇 日落：{sunset}
+```
+
+### 月升月落
+
+```
+🌙 {城市} {date} 月相信息
+
+🌕 月升：{moonrise}
+🌑 月落：{moonset}
+
+| 时间 | 月相 | 亮度 |
+|------|------|------|
+| {fxTime} | {name} | {illumination}% |
 ```
 
 ### JSON 模式示例

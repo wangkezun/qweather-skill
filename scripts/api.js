@@ -107,11 +107,12 @@ const commands = {
 
   'weather-alert': {
     desc: 'Weather alerts',
-    flags: '--lat --lon (required) [--lang]',
+    flags: '--lat --lon (required) [--lang] [--localTime=true|false]',
     run(config, flags) {
       requireFlags(flags, ['lat', 'lon']);
       return request(config, `/weatheralert/v1/current/${flags.lat}/${flags.lon}`, {
         lang: flags.lang || 'zh',
+        ...(flags.localTime && { localTime: flags.localTime }),
       });
     },
   },

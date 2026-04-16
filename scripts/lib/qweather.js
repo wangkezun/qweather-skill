@@ -17,7 +17,11 @@ function loadConfig() {
       const eqIndex = trimmed.indexOf('=');
       if (eqIndex === -1) continue;
       const key = trimmed.slice(0, eqIndex).trim();
-      const value = trimmed.slice(eqIndex + 1).trim();
+      let value = trimmed.slice(eqIndex + 1).trim();
+      // Strip surrounding quotes
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
       if (!process.env[key]) process.env[key] = value;
     }
   }
@@ -89,7 +93,11 @@ function request(config, urlPath, query) {
         try {
           const data = JSON.parse(body);
           if (res.statusCode >= 400) {
+            // v2 error codes (air-quality, weather-alert): HTTP status reflects error
             reject(new Error(`HTTP ${res.statusCode}: ${JSON.stringify(data)}`));
+          } else if (data.code && data.code !== '200' && data.code !== 200) {
+            // v1 error codes (/v7/ endpoints): HTTP 200 but code field indicates error
+            reject(new Error(`API error code ${data.code}: ${JSON.stringify(data)}`));
           } else {
             resolve(data);
           }
@@ -99,6 +107,7 @@ function request(config, urlPath, query) {
       });
       stream.on('error', reject);
     });
+    req.setTimeout(30000, () => { req.destroy(new Error('Request timeout after 30s')); });
     req.on('error', reject);
   });
 }
