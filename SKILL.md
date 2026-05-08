@@ -55,7 +55,7 @@ metadata:
 2. **位置归一化**：
    - 城市名 → 调用 `city-lookup` 取返回的 `id` 与 `lat`/`lon`
    - LocationID → 直接使用
-   - 原始经纬度 → 按下方「坐标系规则」确认坐标系；可疑时改走城市名 + city-lookup
+   - 原始经纬度 → 按下方「经纬度顺序」+「坐标系规则」核对；可疑时改走城市名 + city-lookup
 3. **调用对应 API**：使用 `node /path/to/skill_dir/scripts/api.js <command>` 调用相应接口
 4. **格式化输出**：按输出模式呈现结果
 
@@ -158,9 +158,18 @@ node /path/to/skill_dir/scripts/api.js moon --location=101010100 --date=20260415
 
 ## 注意事项
 
-### ⚠️ 坐标系规则（最重要）
+### ⚠️ 经纬度顺序（容易踩）
 
-QWeather 所有传入坐标——`city-lookup`、v7 的 `location=经度,纬度`、v1 的 `/{lat}/{lon}` 路径——统一遵守：
+QWeather 不同接口的经纬度顺序不一致，传反不会报错而是返回隔壁地区的数据：
+
+- **v7 query 参数** `?location=` 以及 `city-lookup --location=`：`lon,lat`（**经度在前**）
+- **v1 路径参数** `/{lat}/{lon}`（`air-quality` / `weather-alert`）：`lat,lon`（**纬度在前**）
+
+`city-lookup` 写成 `lat,lon` 会直接 400；其他 v7 endpoint 写反通常"成功"但数据是错的。
+
+### ⚠️ 坐标系规则
+
+QWeather 所有传入坐标——`city-lookup`、v7 的 `location=lon,lat`、v1 的 `/{lat}/{lon}` 路径——统一遵守：
 
 - **中国大陆境内：必须 GCJ-02**（高德、腾讯、搜狗等中国地图服务）
 - **中国大陆境外：必须 WGS-84**（Google Maps、Apple Maps 海外版、GPS 设备、OpenStreetMap）
@@ -176,7 +185,6 @@ QWeather 所有传入坐标——`city-lookup`、v7 的 `location=经度,纬度`
 ### 其他
 
 - 城市名有歧义时（如"苏州"），使用 `adm` 参数指定省份；中国境内也可改用 Adcode 彻底消歧
-- 空气质量和预警接口用**路径参数** `/{lat}/{lon}`（纬度在前），v7 接口用 **query 参数** `?location={id 或 lon,lat}`（经度在前）——顺序不同，注意别写反
 - 分钟级降水仅限中国大陆，海外查询会返回空结果
 - 默认使用公制单位（`unit=m`），用户要求时可切换为英制（`unit=i`）
 - 如果用户同时问天气和空气质量，可并行调用两个接口
