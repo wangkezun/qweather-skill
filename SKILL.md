@@ -52,7 +52,10 @@ metadata:
 ## 执行流程
 
 1. **解析用户意图**：判断查询类型（实时天气/预报/空气质量/预警等）和目标地点
-2. **城市查询**：如果用户给的是城市名，先调用 `node /path/to/skill_dir/scripts/api.js city-lookup` 获取 `location ID`
+2. **位置归一化**：
+   - 城市名 → 调用 `city-lookup` 取返回的 `id` 与 `lat`/`lon`
+   - LocationID → 直接使用
+   - 原始经纬度 → 按下方「坐标系规则」确认坐标系；可疑时改走城市名 + city-lookup
 3. **调用对应 API**：使用 `node /path/to/skill_dir/scripts/api.js <command>` 调用相应接口
 4. **格式化输出**：按输出模式呈现结果
 
@@ -61,10 +64,12 @@ metadata:
 所有命令输出 JSON，可直接解析。
 
 ```bash
-# 城市查询 → location[]: name, id, lat, lon, adm1, adm2, country
+# 城市查询（--location 支持：城市名 | 经度,纬度 | LocationID | Adcode，中国 Adcode 可避免歧义）
+# → location[]: name, id, lat, lon, adm1, adm2, country
 node /path/to/skill_dir/scripts/api.js city-lookup --location=北京
 
-# 实时天气 → now: temp, feelsLike, text, windDir, windScale, humidity, precip, pressure, vis, cloud, dew
+# 实时天气（--location: LocationID 或 经度,纬度，下同）
+# → now: temp, feelsLike, text, windDir, windScale, humidity, precip, pressure, vis, cloud, dew
 node /path/to/skill_dir/scripts/api.js weather-now --location=101010100
 
 # 逐日预报（默认3天，可选 3/7/10/15/30）→ daily[]: fxDate, tempMax, tempMin, textDay, textNight, windDirDay, windScaleDay, humidity, precip, uvIndex, sunrise, sunset
@@ -153,8 +158,25 @@ node /path/to/skill_dir/scripts/api.js moon --location=101010100 --date=20260415
 
 ## 注意事项
 
-- 城市名有歧义时（如"苏州"），使用 `adm` 参数指定省份
-- 空气质量和预警接口用**路径参数** `/{lat}/{lon}`，天气接口用 **query 参数** `?location={id}`
+### ⚠️ 坐标系规则（最重要）
+
+QWeather 所有传入坐标——`city-lookup`、v7 的 `location=经度,纬度`、v1 的 `/{lat}/{lon}` 路径——统一遵守：
+
+- **中国大陆境内：必须 GCJ-02**（高德、腾讯、搜狗等中国地图服务）
+- **中国大陆境外：必须 WGS-84**（Google Maps、Apple Maps 海外版、GPS 设备、OpenStreetMap）
+- **百度是 BD-09，不能直接用**，需转 GCJ-02 后再传
+
+错的坐标系会偏移几百米到 1km，看起来"成功"但数据是隔壁地区的。
+
+**当用户给原始经纬度时**：
+- 优先建议改用城市名走 `city-lookup`，拿 QWeather 自家返回的 `id` 和 `lat`/`lon` 后续使用
+- 如果用户坚持用坐标且位置在中国大陆，先确认坐标来源是否为 GCJ-02 系；不确定就直接问，不要默默调用
+- 用户坐标位置在中国大陆境外时按 WGS-84 处理即可
+
+### 其他
+
+- 城市名有歧义时（如"苏州"），使用 `adm` 参数指定省份；中国境内也可改用 Adcode 彻底消歧
+- 空气质量和预警接口用**路径参数** `/{lat}/{lon}`（纬度在前），v7 接口用 **query 参数** `?location={id 或 lon,lat}`（经度在前）——顺序不同，注意别写反
 - 分钟级降水仅限中国大陆，海外查询会返回空结果
 - 默认使用公制单位（`unit=m`），用户要求时可切换为英制（`unit=i`）
 - 如果用户同时问天气和空气质量，可并行调用两个接口
